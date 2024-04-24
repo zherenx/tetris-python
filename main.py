@@ -62,6 +62,19 @@ while running:
     for event in pygame.event.get():
         if event.type == pygame.QUIT:
             running = False
+        if event.type == pygame.KEYDOWN:
+
+            if event.key == pygame.K_ESCAPE:
+                running = False
+
+            if event.key == pygame.K_LEFT:
+                x -= 1
+            elif event.key == pygame.K_RIGHT:
+                x += 1
+            elif event.key == pygame.K_DOWN:
+                pass
+            elif event.key == pygame.K_UP:
+                pass
 
     # fill the screen with a color to wipe away anything from last frame
     screen.fill("black")
