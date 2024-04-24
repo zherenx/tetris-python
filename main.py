@@ -20,6 +20,42 @@ running = True
 # rect = pygame.Rect(1, 10, TILE_SIZE, TILE_SIZE)
 grid = [[pygame.Rect(c * TILE_SIZE, r * TILE_SIZE, TILE_SIZE, TILE_SIZE) for c in range(COL)] for r in range(ROW)]
 
+tetrominoes = [
+    [
+        [0, 0, 0, 0],
+        [1, 1, 1, 1],
+        [0, 0, 0, 0],
+        [0, 0, 0, 0]
+    ], [
+        [0, 0, 0, 0],
+        [0, 1, 1, 0],
+        [0, 1, 1, 0],
+        [0, 0, 0, 0]
+    ], [
+        [0, 1, 0],
+        [1, 1, 1],
+        [0, 0, 0]
+    ], [
+        [1, 0, 0],
+        [1, 1, 1],
+        [0, 0, 0]
+    ], [
+        [0, 0, 1],
+        [1, 1, 1],
+        [0, 0, 0]
+    ], [
+        [0, 1, 1],
+        [1, 1, 0],
+        [0, 0, 0]
+    ], [
+        [1, 1, 0],
+        [0, 1, 1],
+        [0, 0, 0]
+    ]
+]
+
+cur_tetromino = None
+
 while running:
     # poll for events
     # pygame.QUIT event means the user clicked X to close your window
@@ -36,6 +72,17 @@ while running:
     for r in range(ROW):
         for c in range(COL):
             pygame.draw.rect(screen, GRAY, grid[r][c], 1)
+
+    if not cur_tetromino:
+        # TODO: random
+        cur_tetromino = tetrominoes[4]
+        tetromino_size = len(cur_tetromino)
+        x, y = 3 * TILE_SIZE, 0
+
+    for r in range(tetromino_size):
+        for c in range(tetromino_size):
+            if cur_tetromino[r][c]:
+                pygame.draw.rect(screen, WHITE, pygame.Rect(x + c * TILE_SIZE, y + r * TILE_SIZE, TILE_SIZE, TILE_SIZE))
 
 
     # flip() the display to put your work on screen
