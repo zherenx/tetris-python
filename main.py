@@ -77,12 +77,14 @@ while running:
         # TODO: random
         cur_tetromino = tetrominoes[4]
         tetromino_size = len(cur_tetromino)
-        x, y = 3 * TILE_SIZE, 0
+        x, y = 3, 0
 
     for r in range(tetromino_size):
         for c in range(tetromino_size):
             if cur_tetromino[r][c]:
-                pygame.draw.rect(screen, WHITE, pygame.Rect(x + c * TILE_SIZE, y + r * TILE_SIZE, TILE_SIZE, TILE_SIZE))
+                pygame.draw.rect(
+                    screen, WHITE, pygame.Rect((x + c) * TILE_SIZE, (y + r) * TILE_SIZE, TILE_SIZE, TILE_SIZE)
+                )
 
 
     # flip() the display to put your work on screen
