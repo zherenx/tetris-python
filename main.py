@@ -1,17 +1,16 @@
-# Example file showing a basic pygame "game loop"
 import pygame
 
 
-# TODO: refactor to ROW, COL
 COL, ROW = 10, 20
 TILE_SIZE = 32
 RES = TILE_SIZE * COL, TILE_SIZE * ROW
+
+FPS = 60
 
 BLACK = (0, 0, 0)
 WHITE = (255, 255, 255)
 GRAY = (128, 128, 128)
 
-# pygame setup
 pygame.init()
 screen = pygame.display.set_mode(RES)
 clock = pygame.time.Clock()
@@ -73,8 +72,7 @@ def reflect(matrix):
             matrix[i][j], matrix[i][-j - 1] = matrix[i][-j - 1], matrix[i][j]
 
 while running:
-    # poll for events
-    # pygame.QUIT event means the user clicked X to close your window
+
     for event in pygame.event.get():
         if event.type == pygame.QUIT:
             running = False
@@ -93,10 +91,8 @@ while running:
                 if cur_tetromino:
                     rotate(cur_tetromino)
 
-    # fill the screen with a color to wipe away anything from last frame
     screen.fill("black")
 
-    # RENDER YOUR GAME HERE
     # pygame.draw.rect(screen, GRAY, rect)
 
     for r in range(ROW):
@@ -116,10 +112,8 @@ while running:
                     screen, WHITE, pygame.Rect((x + c) * TILE_SIZE, (y + r) * TILE_SIZE, TILE_SIZE, TILE_SIZE)
                 )
 
-
-    # flip() the display to put your work on screen
     pygame.display.flip()
 
-    clock.tick(60)  # limits FPS to 60
+    clock.tick(FPS)
 
 pygame.quit()
