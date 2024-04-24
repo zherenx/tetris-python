@@ -56,6 +56,22 @@ tetrominoes = [
 
 cur_tetromino = None
 
+def rotate(matrix):
+    transpose(matrix)
+    reflect(matrix)
+    
+def transpose(matrix):
+    n = len(matrix)
+    for i in range(n):
+        for j in range(i + 1, n):
+            matrix[j][i], matrix[i][j] = matrix[i][j], matrix[j][i]
+
+def reflect(matrix):
+    n = len(matrix)
+    for i in range(n):
+        for j in range(n // 2):
+            matrix[i][j], matrix[i][-j - 1] = matrix[i][-j - 1], matrix[i][j]
+
 while running:
     # poll for events
     # pygame.QUIT event means the user clicked X to close your window
@@ -72,9 +88,10 @@ while running:
             elif event.key == pygame.K_RIGHT:
                 x += 1
             elif event.key == pygame.K_DOWN:
-                pass
+                y += 1
             elif event.key == pygame.K_UP:
-                pass
+                if cur_tetromino:
+                    rotate(cur_tetromino)
 
     # fill the screen with a color to wipe away anything from last frame
     screen.fill("black")
