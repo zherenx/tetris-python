@@ -59,7 +59,7 @@ class Tetris:
     def __init__(self, h=20, w=10) -> None:
         self.h = 20
         self.w = 10
-        # self.gameboard = None
+        self.gameboard = [[0] * self.w for _ in range(self.h)]
 
         self.cur_tetromino = None
         self.tetromino_type = 0
@@ -104,9 +104,17 @@ class Tetris:
                 if self.cur_tetromino[r][c]:
                     if self.has_collision(self.y + r, self.x + c):
                         self.y -= 1
+                        self.touch_down()
+                        self.init_tetromino()
                         return
                     else:
                         break
+    
+    def touch_down(self):
+        for r in range(self.tetromino_size):
+            for c in range(self.tetromino_size):
+                if self.cur_tetromino[r][c]:
+                    self.gameboard[self.y + r][self.x + c] = self.cur_tetromino[r][c]
 
     def rotate(self):
 
@@ -144,7 +152,7 @@ class Tetris:
     
     # check collision for one block
     def has_collision(self, r, c):
-        if c < 0 or c >= self.w or r >= self.h:
+        if c < 0 or c >= self.w or r >= self.h or self.gameboard[r][c]:
             return True
         return False
 
@@ -175,7 +183,10 @@ while running:
 
     for r in range(ROW):
         for c in range(COL):
-            pygame.draw.rect(screen, GRAY, grid[r][c], 1)
+            if tetris_game.gameboard[r][c]:
+                pygame.draw.rect(screen, WHITE, grid[r][c])
+            else:
+                pygame.draw.rect(screen, GRAY, grid[r][c], 1)
 
     if tetris_game.cur_tetromino:
         for r in range(tetris_game.tetromino_size):
