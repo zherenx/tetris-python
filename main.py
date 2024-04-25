@@ -76,15 +76,45 @@ class Tetris:
 
     def shift_horizontal(self, dx):
         self.x += dx
+        if dx < 0:
+            for r in range(self.tetromino_size):
+                for c in range(self.tetromino_size):
+                    if self.cur_tetromino[r][c]:
+                        if self.has_collision(self.y + r, self.x + c):
+                            self.x -= dx
+                            return
+                        else:
+                            break
+        else:
+            for r in range(self.tetromino_size):
+                for c in range(self.tetromino_size - 1, -1, -1):
+                    if self.cur_tetromino[r][c]:
+                        if self.has_collision(self.y + r, self.x + c):
+                            self.x -= dx
+                            return
+                        else:
+                            break
 
     def shift_down(self):
         self.y += 1
+        for c in range(self.tetromino_size):
+            for r in range(self.tetromino_size - 1, -1, -1):
+                if self.cur_tetromino[r][c]:
+                    if self.has_collision(self.y + r, self.x + c):
+                        self.y -= 1
+                        return
+                    else:
+                        break
 
     def rotate(self):
 
-        def rotate(matrix):
+        def rotate_clockwise(matrix):
             transpose(matrix)
             reflect(matrix)
+        
+        def rotate_counter_clockwise(matrix):
+            reflect(matrix)
+            transpose(matrix)
             
         def transpose(matrix):
             n = len(matrix)
@@ -101,7 +131,20 @@ class Tetris:
         if not self.cur_tetromino:
             return
 
-        rotate(self.cur_tetromino)
+        rotate_clockwise(self.cur_tetromino)
+        # rotate_counter_clockwise(self.cur_tetromino)
+        
+        for r in range(self.tetromino_size):
+            for c in range(self.tetromino_size):
+                if self.cur_tetromino[r][c] and self.has_collision(self.y + r, self.x + c):
+                    rotate_counter_clockwise(self.cur_tetromino)
+                    return
+    
+    # check collision for one block
+    def has_collision(self, r, c):
+        if c < 0 or c >= self.w or r >= self.h:
+            return True
+        return False
 
 tetris_game = Tetris(ROW, COL)
 
