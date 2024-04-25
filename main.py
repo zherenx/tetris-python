@@ -1,4 +1,5 @@
 import pygame
+import random
 
 
 COL, ROW = 10, 20
@@ -61,6 +62,7 @@ class Tetris:
         # self.gameboard = None
 
         self.cur_tetromino = None
+        self.tetromino_type = 0
         self.tetromino_size = 0
         self.x = 0
         self.y = 0
@@ -68,8 +70,8 @@ class Tetris:
         self.init_tetromino()
     
     def init_tetromino(self):
-        # TODO: random
-        self.cur_tetromino = Tetris.tetrominoes[4]
+        self.tetromino_type = random.randint(0, len(Tetris.tetrominoes) - 1)
+        self.cur_tetromino = Tetris.tetrominoes[self.tetromino_type]
         self.tetromino_size = len(self.cur_tetromino)
         self.x = (self.w - self.tetromino_size) // 2
         self.y = 0
