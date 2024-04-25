@@ -7,9 +7,36 @@ BLACK = (0, 0, 0)
 WHITE = (255, 255, 255)
 GRAY = (128, 128, 128)
 
+def transpose(matrix):
+    n = len(matrix)
+    for i in range(n):
+        for j in range(i + 1, n):
+            matrix[j][i], matrix[i][j] = matrix[i][j], matrix[j][i]
+
+def reflect(matrix):
+    n = len(matrix)
+    for i in range(n):
+        for j in range(n // 2):
+            matrix[i][j], matrix[i][-j - 1] = matrix[i][-j - 1], matrix[i][j]
+
+class Tetromino:
+
+    def __init__(self, shape, color):
+        self.shape = deepcopy(shape)
+        self.color = color
+        self.size = len(self.shape)
+
+    def rotate_clockwise(self):
+        transpose(self.shape)
+        reflect(self.shape)
+    
+    def rotate_counter_clockwise(self):
+        reflect(self.shape)
+        transpose(self.shape)
+
 class Tetris:
 
-    tetrominoes = [
+    tetromino_shapes = [
         [
             [0, 0, 0, 0],
             [1, 1, 1, 1],
@@ -62,40 +89,36 @@ class Tetris:
         self.gameboard = [[0] * self.w for _ in range(self.h)]
 
         self.cur_tetromino = None
-        self.cur_color = None
-        self.tetromino_type = 0
-        self.tetromino_size = 0
         self.x = 0
         self.y = 0
 
         self.free_fall_interval = 1000 # TODO: update when level up
         self.free_fall_timer_event = pygame.USEREVENT + 1
 
-        self.init_tetromino()
+        self.init_next_tetromino()
     
-    def init_tetromino(self):
-        self.tetromino_type = random.randint(0, len(Tetris.tetrominoes) - 1)
-        self.cur_tetromino = deepcopy(Tetris.tetrominoes[self.tetromino_type])
-        self.cur_color = Tetris.tetromino_colors[self.tetromino_type]
-        self.tetromino_size = len(self.cur_tetromino)
-        self.x = (self.w - self.tetromino_size) // 2
+    def init_next_tetromino(self):
+        tetromino_type = random.randint(0, len(Tetris.tetromino_shapes) - 1)
+        self.cur_tetromino = Tetromino(Tetris.tetromino_shapes[tetromino_type], Tetris.tetromino_colors[tetromino_type])
+
+        self.x = (self.w - self.cur_tetromino.size) // 2
         self.y = 0
 
     def shift_horizontal(self, dx):
         self.x += dx
         if dx < 0:
-            for r in range(self.tetromino_size):
-                for c in range(self.tetromino_size):
-                    if self.cur_tetromino[r][c]:
+            for r in range(self.cur_tetromino.size):
+                for c in range(self.cur_tetromino.size):
+                    if self.cur_tetromino.shape[r][c]:
                         if self.has_collision(self.y + r, self.x + c):
                             self.x -= dx
                             return
                         else:
                             break
         else:
-            for r in range(self.tetromino_size):
-                for c in range(self.tetromino_size - 1, -1, -1):
-                    if self.cur_tetromino[r][c]:
+            for r in range(self.cur_tetromino.size):
+                for c in range(self.cur_tetromino.size - 1, -1, -1):
+                    if self.cur_tetromino.shape[r][c]:
                         if self.has_collision(self.y + r, self.x + c):
                             self.x -= dx
                             return
@@ -104,23 +127,23 @@ class Tetris:
 
     def shift_down(self):
         self.y += 1
-        for c in range(self.tetromino_size):
-            for r in range(self.tetromino_size - 1, -1, -1):
-                if self.cur_tetromino[r][c]:
+        for c in range(self.cur_tetromino.size):
+            for r in range(self.cur_tetromino.size - 1, -1, -1):
+                if self.cur_tetromino.shape[r][c]:
                     if self.has_collision(self.y + r, self.x + c):
                         self.y -= 1
                         self.touch_down()
-                        self.init_tetromino()
+                        self.init_next_tetromino()
                         return
                     else:
                         break
     
     def touch_down(self):
         dirty_rows = set()
-        for r in range(self.tetromino_size):
-            for c in range(self.tetromino_size):
-                if self.cur_tetromino[r][c]:
-                    self.gameboard[self.y + r][self.x + c] = self.cur_color
+        for r in range(self.cur_tetromino.size):
+            for c in range(self.cur_tetromino.size):
+                if self.cur_tetromino.shape[r][c]:
+                    self.gameboard[self.y + r][self.x + c] = self.cur_tetromino.color
                     dirty_rows.add(self.y + r)
         self.check_lines(dirty_rows)
     
@@ -143,37 +166,16 @@ class Tetris:
         self.gameboard = [[0] * self.w] + self.gameboard
 
     def rotate(self):
-
-        def rotate_clockwise(matrix):
-            transpose(matrix)
-            reflect(matrix)
-        
-        def rotate_counter_clockwise(matrix):
-            reflect(matrix)
-            transpose(matrix)
-            
-        def transpose(matrix):
-            n = len(matrix)
-            for i in range(n):
-                for j in range(i + 1, n):
-                    matrix[j][i], matrix[i][j] = matrix[i][j], matrix[j][i]
-
-        def reflect(matrix):
-            n = len(matrix)
-            for i in range(n):
-                for j in range(n // 2):
-                    matrix[i][j], matrix[i][-j - 1] = matrix[i][-j - 1], matrix[i][j]
         
         if not self.cur_tetromino:
             return
 
-        rotate_clockwise(self.cur_tetromino)
-        # rotate_counter_clockwise(self.cur_tetromino)
+        self.cur_tetromino.rotate_clockwise()
         
-        for r in range(self.tetromino_size):
-            for c in range(self.tetromino_size):
-                if self.cur_tetromino[r][c] and self.has_collision(self.y + r, self.x + c):
-                    rotate_counter_clockwise(self.cur_tetromino)
+        for r in range(self.cur_tetromino.size):
+            for c in range(self.cur_tetromino.size):
+                if self.cur_tetromino.shape[r][c] and self.has_collision(self.y + r, self.x + c):
+                    self.cur_tetromino.rotate_counter_clockwise()
                     return
     
     # check collision for one block
@@ -227,11 +229,12 @@ class Tetris:
                         pygame.draw.rect(screen, GRAY, grid[r][c], 1)
 
             if self.cur_tetromino:
-                for r in range(self.tetromino_size):
-                    for c in range(self.tetromino_size):
-                        if self.cur_tetromino[r][c]:
+                for r in range(self.cur_tetromino.size):
+                    for c in range(self.cur_tetromino.size):
+                        if self.cur_tetromino.shape[r][c]:
                             pygame.draw.rect(
-                                screen, self.cur_color, 
+                                screen, 
+                                self.cur_tetromino.color, 
                                 pygame.Rect(
                                     (self.x + c) * self.block_size, 
                                     (self.y + r) * self.block_size, 
