@@ -3,10 +3,6 @@ import pygame
 import random
 
 
-BLACK = (0, 0, 0)
-WHITE = (255, 255, 255)
-GRAY = (128, 128, 128)
-
 def transpose(matrix):
     n = len(matrix)
     for i in range(n):
@@ -77,6 +73,8 @@ class Tetris:
         (0, 255, 0),
         (255, 0, 0)
     ]
+
+    grid_color = (40, 40, 40)
 
     def __init__(self, height=20, width=10, block_size=32, fps=60) -> None:
 
@@ -221,13 +219,6 @@ class Tetris:
 
             screen.fill("black")
 
-            for r in range(self.h):
-                for c in range(self.w):
-                    if self.gameboard[r][c]:
-                        pygame.draw.rect(screen, self.gameboard[r][c], grid[r][c])
-                    else:
-                        pygame.draw.rect(screen, GRAY, grid[r][c], 1)
-
             if self.cur_tetromino:
                 for r in range(self.cur_tetromino.size):
                     for c in range(self.cur_tetromino.size):
@@ -241,6 +232,12 @@ class Tetris:
                                     self.block_size, self.block_size
                                 )
                             )
+            
+            for r in range(self.h):
+                for c in range(self.w):
+                    if self.gameboard[r][c]:
+                        pygame.draw.rect(screen, self.gameboard[r][c], grid[r][c])
+                    pygame.draw.rect(screen, Tetris.grid_color, grid[r][c], 1)
 
             pygame.display.flip()
 
