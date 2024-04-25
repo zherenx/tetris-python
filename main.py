@@ -2,23 +2,9 @@ import pygame
 import random
 
 
-COL, ROW = 10, 20
-TILE_SIZE = 32
-RES = TILE_SIZE * COL, TILE_SIZE * ROW
-
-FPS = 60
-
 BLACK = (0, 0, 0)
 WHITE = (255, 255, 255)
 GRAY = (128, 128, 128)
-
-pygame.init()
-screen = pygame.display.set_mode(RES)
-clock = pygame.time.Clock()
-running = True
-
-# rect = pygame.Rect(1, 10, TILE_SIZE, TILE_SIZE)
-grid = [[pygame.Rect(c * TILE_SIZE, r * TILE_SIZE, TILE_SIZE, TILE_SIZE) for c in range(COL)] for r in range(ROW)]
 
 class Tetris:
 
@@ -56,9 +42,13 @@ class Tetris:
         ]
     ]
 
-    def __init__(self, h=20, w=10) -> None:
-        self.h = 20
-        self.w = 10
+    def __init__(self, height=20, width=10, block_size=32, fps=60) -> None:
+
+        self.h = height
+        self.w = width
+        self.block_size = block_size
+        self.res = self.block_size * self.w, self.block_size * self.h
+        self.fps = fps
         self.gameboard = [[0] * self.w for _ in range(self.h)]
 
         self.cur_tetromino = None
@@ -177,53 +167,63 @@ class Tetris:
             return True
         return False
 
-tetris_game = Tetris(ROW, COL)
+    def run(self):
 
-while running:
+        pygame.init()
+        screen = pygame.display.set_mode(self.res)
 
-    for event in pygame.event.get():
-        if event.type == pygame.QUIT:
-            running = False
-        if event.type == pygame.KEYDOWN:
+        grid = [[pygame.Rect(c * self.block_size, r * self.block_size, self.block_size, self.block_size) for c in range(self.w)] for r in range(self.h)]
 
-            if event.key == pygame.K_ESCAPE:
-                running = False
+        clock = pygame.time.Clock()
+        running = True
+        
+        while running:
 
-            if event.key == pygame.K_LEFT:
-                tetris_game.shift_horizontal(-1)
-            elif event.key == pygame.K_RIGHT:
-                tetris_game.shift_horizontal(1)
-            elif event.key == pygame.K_DOWN:
-                tetris_game.shift_down()
-            elif event.key == pygame.K_UP:
-                tetris_game.rotate()
+            for event in pygame.event.get():
+                if event.type == pygame.QUIT:
+                    running = False
+                if event.type == pygame.KEYDOWN:
 
-    screen.fill("black")
+                    if event.key == pygame.K_ESCAPE:
+                        running = False
 
-    # pygame.draw.rect(screen, GRAY, rect)
+                    if event.key == pygame.K_LEFT:
+                        self.shift_horizontal(-1)
+                    elif event.key == pygame.K_RIGHT:
+                        self.shift_horizontal(1)
+                    elif event.key == pygame.K_DOWN:
+                        self.shift_down()
+                    elif event.key == pygame.K_UP:
+                        self.rotate()
 
-    for r in range(ROW):
-        for c in range(COL):
-            if tetris_game.gameboard[r][c]:
-                pygame.draw.rect(screen, WHITE, grid[r][c])
-            else:
-                pygame.draw.rect(screen, GRAY, grid[r][c], 1)
+            screen.fill("black")
 
-    if tetris_game.cur_tetromino:
-        for r in range(tetris_game.tetromino_size):
-            for c in range(tetris_game.tetromino_size):
-                if tetris_game.cur_tetromino[r][c]:
-                    pygame.draw.rect(
-                        screen, WHITE, 
-                        pygame.Rect(
-                            (tetris_game.x + c) * TILE_SIZE, 
-                            (tetris_game.y + r) * TILE_SIZE, 
-                            TILE_SIZE, TILE_SIZE
-                        )
-                    )
+            for r in range(self.h):
+                for c in range(self.w):
+                    if self.gameboard[r][c]:
+                        pygame.draw.rect(screen, WHITE, grid[r][c])
+                    else:
+                        pygame.draw.rect(screen, GRAY, grid[r][c], 1)
 
-    pygame.display.flip()
+            if self.cur_tetromino:
+                for r in range(self.tetromino_size):
+                    for c in range(self.tetromino_size):
+                        if self.cur_tetromino[r][c]:
+                            pygame.draw.rect(
+                                screen, WHITE, 
+                                pygame.Rect(
+                                    (self.x + c) * self.block_size, 
+                                    (self.y + r) * self.block_size, 
+                                    self.block_size, self.block_size
+                                )
+                            )
 
-    clock.tick(FPS)
+            pygame.display.flip()
 
-pygame.quit()
+            clock.tick(self.fps)
+            
+        pygame.quit()
+
+if __name__ == '__main__':
+    tetris_game = Tetris()
+    tetris_game.run()
