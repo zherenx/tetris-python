@@ -111,10 +111,31 @@ class Tetris:
                         break
     
     def touch_down(self):
+        dirty_rows = set()
         for r in range(self.tetromino_size):
             for c in range(self.tetromino_size):
                 if self.cur_tetromino[r][c]:
                     self.gameboard[self.y + r][self.x + c] = self.cur_tetromino[r][c]
+                    dirty_rows.add(self.y + r)
+        self.check_lines(dirty_rows)
+    
+    def check_lines(self, rows):
+        num_completed_lines = 0
+        for r in rows:
+            is_completed = True
+            for c in range(self.w):
+                if not self.gameboard[r][c]:
+                    is_completed = False
+                    continue
+            if is_completed:
+                self.clear_line(r)
+                num_completed_lines += 1
+
+        # TODO: logic for handling score
+    
+    def clear_line(self, row):
+        del self.gameboard[row]
+        self.gameboard = [[0] * self.w] + self.gameboard
 
     def rotate(self):
 
