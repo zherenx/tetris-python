@@ -40,6 +40,16 @@ class Tetris:
         ]
     ]
 
+    tetromino_colors = [
+        (0, 255, 255),
+        (255, 255, 0),
+        (128, 0, 128),
+        (0, 0, 255),
+        (255, 127, 0),
+        (0, 255, 0),
+        (255, 0, 0)
+    ]
+
     def __init__(self, height=20, width=10, block_size=32, fps=60) -> None:
 
         self.h = height
@@ -51,6 +61,7 @@ class Tetris:
         self.gameboard = [[0] * self.w for _ in range(self.h)]
 
         self.cur_tetromino = None
+        self.cur_color = None
         self.tetromino_type = 0
         self.tetromino_size = 0
         self.x = 0
@@ -64,6 +75,7 @@ class Tetris:
     def init_tetromino(self):
         self.tetromino_type = random.randint(0, len(Tetris.tetrominoes) - 1)
         self.cur_tetromino = Tetris.tetrominoes[self.tetromino_type]
+        self.cur_color = Tetris.tetromino_colors[self.tetromino_type]
         self.tetromino_size = len(self.cur_tetromino)
         self.x = (self.w - self.tetromino_size) // 2
         self.y = 0
@@ -107,7 +119,7 @@ class Tetris:
         for r in range(self.tetromino_size):
             for c in range(self.tetromino_size):
                 if self.cur_tetromino[r][c]:
-                    self.gameboard[self.y + r][self.x + c] = self.cur_tetromino[r][c]
+                    self.gameboard[self.y + r][self.x + c] = self.cur_color
                     dirty_rows.add(self.y + r)
         self.check_lines(dirty_rows)
     
@@ -209,7 +221,7 @@ class Tetris:
             for r in range(self.h):
                 for c in range(self.w):
                     if self.gameboard[r][c]:
-                        pygame.draw.rect(screen, WHITE, grid[r][c])
+                        pygame.draw.rect(screen, self.gameboard[r][c], grid[r][c])
                     else:
                         pygame.draw.rect(screen, GRAY, grid[r][c], 1)
 
@@ -218,7 +230,7 @@ class Tetris:
                     for c in range(self.tetromino_size):
                         if self.cur_tetromino[r][c]:
                             pygame.draw.rect(
-                                screen, WHITE, 
+                                screen, self.cur_color, 
                                 pygame.Rect(
                                     (self.x + c) * self.block_size, 
                                     (self.y + r) * self.block_size, 
