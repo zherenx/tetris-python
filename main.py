@@ -1,3 +1,4 @@
+from copy import deepcopy
 import pygame
 import random
 
@@ -74,7 +75,7 @@ class Tetris:
     
     def init_tetromino(self):
         self.tetromino_type = random.randint(0, len(Tetris.tetrominoes) - 1)
-        self.cur_tetromino = Tetris.tetrominoes[self.tetromino_type]
+        self.cur_tetromino = deepcopy(Tetris.tetrominoes[self.tetromino_type])
         self.cur_color = Tetris.tetromino_colors[self.tetromino_type]
         self.tetromino_size = len(self.cur_tetromino)
         self.x = (self.w - self.tetromino_size) // 2
