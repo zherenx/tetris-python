@@ -49,6 +49,7 @@ class Tetris:
         self.block_size = block_size
         self.res = self.block_size * self.w, self.block_size * self.h
         self.fps = fps
+
         self.gameboard = [[0] * self.w for _ in range(self.h)]
 
         self.cur_tetromino = None
@@ -56,6 +57,9 @@ class Tetris:
         self.tetromino_size = 0
         self.x = 0
         self.y = 0
+
+        self.free_fall_interval = 1000 # TODO: update when level up
+        self.free_fall_timer_event = pygame.USEREVENT + 1
 
         self.init_tetromino()
     
@@ -176,12 +180,18 @@ class Tetris:
 
         clock = pygame.time.Clock()
         running = True
+
+        pygame.time.set_timer(self.free_fall_timer_event, self.free_fall_interval)
         
         while running:
 
             for event in pygame.event.get():
                 if event.type == pygame.QUIT:
                     running = False
+
+                if event.type == self.free_fall_timer_event:
+                    self.shift_down()
+
                 if event.type == pygame.KEYDOWN:
 
                     if event.key == pygame.K_ESCAPE:
