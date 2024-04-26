@@ -268,7 +268,6 @@ class Tetris:
 
         # main_screen: (game_screen, info_screen: (title, score, preview_screen))
         main_screen = pygame.display.set_mode(main_screen_res)
-        main_screen.fill(Tetris.background_color)
 
         game_screen = pygame.Surface(game_screen_res)
         info_screen = pygame.Surface(info_screen_res)
@@ -414,6 +413,7 @@ class Tetris:
                 option_text = normal_text_font.render(f"'R' to restart, 'Esc' to exit", False, Tetris.normal_text_color)
                 info_screen.blit(option_text,(get_x_offset_for_centering(info_screen, option_text), option_text_offset_to_info_screen_y))
 
+                main_screen.fill(Tetris.background_color)
                 main_screen.blit(game_screen, game_screen_offset)
                 main_screen.blit(info_screen, info_screen_offset)
 
