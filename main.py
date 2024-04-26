@@ -94,18 +94,23 @@ class Tetris:
         self.x = 0
         self.y = 0
 
-        self.score = 0
+        self.next_tetromino = None
+        self.update_next_tetromino()
+        self.update_tetromino()
 
+        self.score = 0
         self.free_fall_interval = 1000 # TODO: update when level up
 
-        self.init_next_tetromino()
     
-    def init_next_tetromino(self):
-        tetromino_type = random.randint(0, len(Tetris.tetromino_shapes) - 1)
-        self.cur_tetromino = Tetromino(Tetris.tetromino_shapes[tetromino_type], Tetris.tetromino_colors[tetromino_type])
-
+    def update_tetromino(self):
+        self.cur_tetromino = self.next_tetromino
+        self.update_next_tetromino()
         self.x = (self.w - self.cur_tetromino.size) // 2
         self.y = 0
+    
+    def update_next_tetromino(self):
+        tetromino_type = random.randint(0, len(Tetris.tetromino_shapes) - 1)
+        self.next_tetromino = Tetromino(Tetris.tetromino_shapes[tetromino_type], Tetris.tetromino_colors[tetromino_type])
 
     def shift_horizontal(self, dx):
         self.x += dx
@@ -136,7 +141,7 @@ class Tetris:
                     if self.has_collision(self.y + r, self.x + c):
                         self.y -= 1
                         self.touch_down()
-                        self.init_next_tetromino()
+                        self.update_tetromino()
                         return
                     else:
                         break
@@ -192,6 +197,15 @@ class Tetris:
 
         def get_x_offset_for_centering(main_surface, blit_surface):
             return (main_surface.get_size()[0] - blit_surface.get_size()[0]) // 2
+        
+        def draw_tetromino(surface, tetromino, x, y, block_size, draw_border=False, border_color=Tetris.grid_color):
+            for r in range(tetromino.size):
+                for c in range(tetromino.size):
+                    if tetromino.shape[r][c]:
+                        rect = pygame.Rect(x + c * block_size, y + r * block_size, block_size, block_size)
+                        pygame.draw.rect(surface, tetromino.color, rect)
+                        if draw_border:
+                            pygame.draw.rect(surface, border_color, rect, 1)
 
         game_screen_res = self.block_size * self.w, self.block_size * self.h
         info_screen_res = self.block_size * 6, self.block_size * self.h
@@ -261,18 +275,7 @@ class Tetris:
             game_screen.fill("black")
 
             if self.cur_tetromino:
-                for r in range(self.cur_tetromino.size):
-                    for c in range(self.cur_tetromino.size):
-                        if self.cur_tetromino.shape[r][c]:
-                            pygame.draw.rect(
-                                game_screen, 
-                                self.cur_tetromino.color, 
-                                pygame.Rect(
-                                    (self.x + c) * self.block_size, 
-                                    (self.y + r) * self.block_size, 
-                                    self.block_size, self.block_size
-                                )
-                            )
+                draw_tetromino(game_screen, self.cur_tetromino, self.x * self.block_size, self.y * self.block_size, self.block_size)
             
             for r in range(self.h):
                 for c in range(self.w):
@@ -291,6 +294,12 @@ class Tetris:
             preview_screen.fill('black')
             next_text = normal_text_font.render("Next:", True, (255, 255, 255))
             preview_screen.blit(next_text, (self.block_size // 8, self.block_size // 8))
+            tetromino_offset = (
+                (preview_screen_res[0] - self.next_tetromino.size * self.block_size) // 2,
+                (preview_screen_res[1] - self.next_tetromino.size * self.block_size) // 2 + self.block_size // 2
+            )
+            draw_tetromino(preview_screen, self.next_tetromino, tetromino_offset[0], tetromino_offset[1], self.block_size, draw_border=True)
+
             info_screen.blit(preview_screen, preview_screen_offset)
 
             main_screen.blit(game_screen, game_screen_offset)
