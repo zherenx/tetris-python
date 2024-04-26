@@ -76,12 +76,16 @@ class Tetris:
 
     grid_color = (40, 40, 40)
 
+    # TODO:
+    # def __init__(self, res) -> None:
+    #     pass
+
     def __init__(self, height=20, width=10, block_size=32, fps=60) -> None:
 
         self.h = height
         self.w = width
         self.block_size = block_size
-        self.res = self.block_size * self.w, self.block_size * self.h
+
         self.fps = fps
 
         self.gameboard = [[0] * self.w for _ in range(self.h)]
@@ -90,8 +94,9 @@ class Tetris:
         self.x = 0
         self.y = 0
 
+        self.score = 0
+
         self.free_fall_interval = 1000 # TODO: update when level up
-        self.free_fall_timer_event = pygame.USEREVENT + 1
 
         self.init_next_tetromino()
     
@@ -157,7 +162,8 @@ class Tetris:
                 self.clear_line(r)
                 num_completed_lines += 1
 
-        # TODO: logic for handling score
+        # TODO: update score calculation logic
+        self.score += num_completed_lines * 100
     
     def clear_line(self, row):
         del self.gameboard[row]
@@ -184,15 +190,49 @@ class Tetris:
 
     def run(self):
 
+        def get_x_offset_for_centering(main_surface, blit_surface):
+            return (main_surface.get_size()[0] - blit_surface.get_size()[0]) // 2
+
+        game_screen_res = self.block_size * self.w, self.block_size * self.h
+        info_screen_res = self.block_size * 6, self.block_size * self.h
+        preview_screen_res = self.block_size * 5, self.block_size * 5
+
+        main_screen_margin = self.block_size // 2
+        main_screen_res = (
+            game_screen_res[0] + info_screen_res[0] + main_screen_margin * 3,
+            game_screen_res[1] + main_screen_margin * 2,
+        )
+
+        game_screen_offset = (main_screen_margin, main_screen_margin)
+        info_screen_offset = (main_screen_margin * 2 + game_screen_res[0], main_screen_margin)
+
         pygame.init()
-        screen = pygame.display.set_mode(self.res)
+
+        # main_screen: (game_screen, info_screen: (title, score, preview_screen))
+        main_screen = pygame.display.set_mode(main_screen_res)
+        main_screen.fill(Tetris.grid_color)
+
+        game_screen = pygame.Surface(game_screen_res)
+        info_screen = pygame.Surface(info_screen_res)
+        preview_screen = pygame.Surface(preview_screen_res)
+
+        title_font = pygame.font.SysFont("Calibri", self.block_size)
+        normal_text_font = pygame.font.SysFont("Calibri", self.block_size // 2)
+
+        title = title_font.render("TETRIS", False, (255, 0, 0))
+        
+        # offset respect to info screen
+        title_offset = get_x_offset_for_centering(info_screen, title), self.block_size
+        score_text_offset_y = self.block_size * 3
+        preview_screen_offset = get_x_offset_for_centering(info_screen, preview_screen), self.block_size * 6
 
         grid = [[pygame.Rect(c * self.block_size, r * self.block_size, self.block_size, self.block_size) for c in range(self.w)] for r in range(self.h)]
 
         clock = pygame.time.Clock()
         running = True
 
-        pygame.time.set_timer(self.free_fall_timer_event, self.free_fall_interval)
+        free_fall_timer_event = pygame.USEREVENT + 1
+        pygame.time.set_timer(free_fall_timer_event, self.free_fall_interval)
         
         while running:
 
@@ -200,7 +240,7 @@ class Tetris:
                 if event.type == pygame.QUIT:
                     running = False
 
-                if event.type == self.free_fall_timer_event:
+                if event.type == free_fall_timer_event:
                     self.shift_down()
 
                 if event.type == pygame.KEYDOWN:
@@ -217,14 +257,15 @@ class Tetris:
                     elif event.key == pygame.K_UP:
                         self.rotate()
 
-            screen.fill("black")
+            # update game screen
+            game_screen.fill("black")
 
             if self.cur_tetromino:
                 for r in range(self.cur_tetromino.size):
                     for c in range(self.cur_tetromino.size):
                         if self.cur_tetromino.shape[r][c]:
                             pygame.draw.rect(
-                                screen, 
+                                game_screen, 
                                 self.cur_tetromino.color, 
                                 pygame.Rect(
                                     (self.x + c) * self.block_size, 
@@ -236,8 +277,24 @@ class Tetris:
             for r in range(self.h):
                 for c in range(self.w):
                     if self.gameboard[r][c]:
-                        pygame.draw.rect(screen, self.gameboard[r][c], grid[r][c])
-                    pygame.draw.rect(screen, Tetris.grid_color, grid[r][c], 1)
+                        pygame.draw.rect(game_screen, self.gameboard[r][c], grid[r][c])
+                    pygame.draw.rect(game_screen, Tetris.grid_color, grid[r][c], 1)
+
+            # update info screen
+            info_screen.fill(Tetris.grid_color)
+
+            info_screen.blit(title, title_offset)
+
+            score_text = normal_text_font.render(f"Score: {self.score}", True, (255, 255, 255))
+            info_screen.blit(score_text, (get_x_offset_for_centering(info_screen, score_text), score_text_offset_y))
+
+            preview_screen.fill('black')
+            next_text = normal_text_font.render("Next:", True, (255, 255, 255))
+            preview_screen.blit(next_text, (self.block_size // 8, self.block_size // 8))
+            info_screen.blit(preview_screen, preview_screen_offset)
+
+            main_screen.blit(game_screen, game_screen_offset)
+            main_screen.blit(info_screen, info_screen_offset)
 
             pygame.display.flip()
 
