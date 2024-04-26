@@ -75,7 +75,6 @@ class Tetris:
     ]
 
     background_color = (40, 40, 40)
-
     normal_text_color = (255, 255, 255)
 
     def __init__(self, height=20, width=10, block_size=32, fps=60) -> None:
@@ -100,7 +99,12 @@ class Tetris:
         self.update_tetromino()
 
         self.score = 0
-        self.free_fall_interval = 1000 # TODO: update when level up
+        self.on_tetris = False # indicate if previous line-clear was "Tetris"
+
+        self.level = 1
+        self.line_counter = 0
+        self.free_fall_interval = 1000
+        self.set_timer_flag = True
 
         self.game_over = False
 
@@ -170,17 +174,38 @@ class Tetris:
             for c in range(self.w):
                 if not self.gameboard[r][c]:
                     is_completed = False
-                    continue
+                    break
             if is_completed:
                 self.clear_line(r)
                 num_completed_lines += 1
 
-        # TODO: update score calculation logic
-        self.score += num_completed_lines * 100
-    
+        if num_completed_lines > 0:
+            self.score += self.scoring(num_completed_lines)
+            self.line_counter += num_completed_lines
+            if self.line_counter >= 8:
+                self.level_up()
+
     def clear_line(self, row):
         del self.gameboard[row]
         self.gameboard = [[0] * self.w] + self.gameboard
+    
+    def scoring(self, n):
+        standard_score = [40, 100, 300, 1200]
+        score = standard_score[n - 1]
+        score *= self.level
+        if self.on_tetris:
+            score *=  2
+        self.on_tetris = (n == 4)
+        return score
+
+    def level_up(self):
+        # cap the max level at 10 (until I come up with the next interesting idea)
+        if self.level == 10:
+            return
+        self.level += 1
+        self.free_fall_interval = int(self.free_fall_interval * 0.8)
+        self.set_timer_flag = True
+        self.line_counter = 0
 
     def rotate(self):
         if not self.cur_tetromino:
@@ -264,9 +289,10 @@ class Tetris:
             get_x_offset_for_centering(info_screen, title), self.block_size
         )
         score_text_offset_to_info_screen_y = title_offset_to_info_screen[1] + self.block_size * 2
+        level_text_offset_to_info_screen_y = score_text_offset_to_info_screen_y + self.block_size * 2
         preview_screen_offset_to_info_screen = (
             get_x_offset_for_centering(info_screen, preview_screen), 
-            score_text_offset_to_info_screen_y + self.block_size * 3
+            level_text_offset_to_info_screen_y + self.block_size * 3
         )
         option_text_offset_to_info_screen_y = \
             preview_screen_offset_to_info_screen[1] + preview_screen_res[1] + self.block_size * 2
@@ -319,8 +345,6 @@ class Tetris:
 
             if self.game_over and last_frame_drawn:
 
-                # TODO: draw the last piece on gameboard
-
                 main_screen.blit(game_over_background, (0, 0))
                 # pygame.draw.rect(main_screen, (40, 40, 40, 10), (0, 0, main_screen.get_size()[0], main_screen.get_size()[1]))
                 # main_screen.fill((40, 40, 40, 10))
@@ -336,6 +360,10 @@ class Tetris:
                 main_screen.blit(game_over_screen, game_over_screen_offset)
             
             else:
+
+                if self.set_timer_flag:
+                    pygame.time.set_timer(free_fall_timer_event, self.free_fall_interval)
+                    self.set_timer_flag = False
 
                 # update game screen
                 game_screen.fill("black")
@@ -362,6 +390,9 @@ class Tetris:
 
                 score_text = normal_text_font.render(f"Score: {self.score}", False, Tetris.normal_text_color)
                 info_screen.blit(score_text, (get_x_offset_for_centering(info_screen, score_text), score_text_offset_to_info_screen_y))
+
+                level_text = normal_text_font.render(f"Level {self.level}", False, Tetris.normal_text_color)
+                info_screen.blit(level_text, (get_x_offset_for_centering(info_screen, level_text), level_text_offset_to_info_screen_y))
 
                 preview_screen.fill('black')
                 next_text = normal_text_font.render("Next:", False, (255, 255, 255))
