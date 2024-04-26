@@ -78,10 +78,6 @@ class Tetris:
 
     normal_text_color = (255, 255, 255)
 
-    # TODO:
-    # def __init__(self, res) -> None:
-    #     pass
-
     def __init__(self, height=20, width=10, block_size=32, fps=60) -> None:
 
         self.h = height
@@ -117,7 +113,9 @@ class Tetris:
     
     def update_next_tetromino(self):
         tetromino_type = random.randint(0, len(Tetris.tetromino_shapes) - 1)
-        self.next_tetromino = Tetromino(Tetris.tetromino_shapes[tetromino_type], Tetris.tetromino_colors[tetromino_type])
+        self.next_tetromino = Tetromino(
+            Tetris.tetromino_shapes[tetromino_type], Tetris.tetromino_colors[tetromino_type]
+        )
 
     def shift_horizontal(self, dx):
         self.x += dx
@@ -207,11 +205,14 @@ class Tetris:
         def get_x_offset_for_centering(main_surface, blit_surface):
             return (main_surface.get_size()[0] - blit_surface.get_size()[0]) // 2
         
-        def draw_tetromino(surface, tetromino, x, y, block_size, draw_border=False, border_color=Tetris.background_color):
+        def draw_tetromino(surface, tetromino, x, y, block_size, 
+                           draw_border=False, border_color=Tetris.background_color):
             for r in range(tetromino.size):
                 for c in range(tetromino.size):
                     if tetromino.shape[r][c]:
-                        rect = pygame.Rect(x + c * block_size, y + r * block_size, block_size, block_size)
+                        rect = pygame.Rect(x + c * block_size, 
+                                           y + r * block_size, 
+                                           block_size, block_size)
                         pygame.draw.rect(surface, tetromino.color, rect)
                         if draw_border:
                             pygame.draw.rect(surface, border_color, rect, 1)
@@ -230,7 +231,10 @@ class Tetris:
 
         game_screen_offset = (main_screen_margin, main_screen_margin)
         info_screen_offset = (main_screen_margin * 2 + game_screen_res[0], main_screen_margin)
-        game_over_screen_offset = (main_screen_res[0] - game_over_screen_res[0]) // 2, (main_screen_res[1] - game_over_screen_res[1]) // 2
+        game_over_screen_offset = (
+            (main_screen_res[0] - game_over_screen_res[0]) // 2, 
+            (main_screen_res[1] - game_over_screen_res[1]) // 2
+        )
 
         pygame.init()
 
@@ -253,15 +257,25 @@ class Tetris:
         title = title_font.render("TETRIS", False, (255, 0, 0))
         
         # precompute offset respect to info screen
-        title_offset_to_info_screen = get_x_offset_for_centering(info_screen, title), self.block_size
+        title_offset_to_info_screen = (
+            get_x_offset_for_centering(info_screen, title), self.block_size
+        )
         score_text_offset_to_info_screen_y = title_offset_to_info_screen[1] + self.block_size * 2
-        preview_screen_offset_to_info_screen = get_x_offset_for_centering(info_screen, preview_screen), score_text_offset_to_info_screen_y + self.block_size * 3
-        option_text_offset_to_info_screen_y = preview_screen_offset_to_info_screen[1] + preview_screen_res[1] + self.block_size * 2
+        preview_screen_offset_to_info_screen = (
+            get_x_offset_for_centering(info_screen, preview_screen), 
+            score_text_offset_to_info_screen_y + self.block_size * 3
+        )
+        option_text_offset_to_info_screen_y = \
+            preview_screen_offset_to_info_screen[1] + preview_screen_res[1] + self.block_size * 2
 
         # precompute offset respect to game over screen
-        title_offset_to_game_over_screen = get_x_offset_for_centering(game_over_screen, title), self.block_size
-        score_text_offset_to_game_over_screen_y = title_offset_to_game_over_screen[1] + self.block_size * 2
-        option_text_offset_to_game_over_screen_y = score_text_offset_to_game_over_screen_y + self.block_size * 3
+        title_offset_to_game_over_screen = (
+            get_x_offset_for_centering(game_over_screen, title), self.block_size
+        )
+        score_text_offset_to_game_over_screen_y = \
+            title_offset_to_game_over_screen[1] + self.block_size * 2
+        option_text_offset_to_game_over_screen_y = \
+            score_text_offset_to_game_over_screen_y + self.block_size * 3
 
         grid = [[pygame.Rect(c * self.block_size, r * self.block_size, self.block_size, self.block_size) for c in range(self.w)] for r in range(self.h)]
 
@@ -304,12 +318,11 @@ class Tetris:
 
                 game_over_screen.blit(title, title_offset_to_game_over_screen)
                 
-                score_text = normal_text_font.render(f"Your Score: {self.score}", False
-                                                     , Tetris.normal_text_color)
-                game_over_screen.blit(score_text,(get_x_offset_for_centering(game_over_screen, score_text), score_text_offset_to_game_over_screen_y))
+                score_text = normal_text_font.render(f"Your Score: {self.score}", False, Tetris.normal_text_color)
+                game_over_screen.blit(score_text, (get_x_offset_for_centering(game_over_screen, score_text), score_text_offset_to_game_over_screen_y))
 
                 option_text = normal_text_font.render(f"'R' to restart, 'Esc' to exit", False, Tetris.normal_text_color)
-                game_over_screen.blit(option_text,(get_x_offset_for_centering(game_over_screen, option_text), option_text_offset_to_game_over_screen_y))
+                game_over_screen.blit(option_text, (get_x_offset_for_centering(game_over_screen, option_text), option_text_offset_to_game_over_screen_y))
 
                 main_screen.blit(game_over_screen, game_over_screen_offset)
             
@@ -319,7 +332,13 @@ class Tetris:
                 game_screen.fill("black")
 
                 if self.cur_tetromino:
-                    draw_tetromino(game_screen, self.cur_tetromino, self.x * self.block_size, self.y * self.block_size, self.block_size)
+                    draw_tetromino(
+                        game_screen, 
+                        self.cur_tetromino, 
+                        self.x * self.block_size, 
+                        self.y * self.block_size, 
+                        self.block_size
+                    )
                 
                 for r in range(self.h):
                     for c in range(self.w):
@@ -342,7 +361,14 @@ class Tetris:
                     (preview_screen_res[0] - self.next_tetromino.size * self.block_size) // 2,
                     (preview_screen_res[1] - self.next_tetromino.size * self.block_size) // 2 + self.block_size // 2
                 )
-                draw_tetromino(preview_screen, self.next_tetromino, tetromino_offset[0], tetromino_offset[1], self.block_size, draw_border=True)
+                draw_tetromino(
+                    preview_screen, 
+                    self.next_tetromino, 
+                    tetromino_offset[0], 
+                    tetromino_offset[1], 
+                    self.block_size, 
+                    draw_border=True
+                )
 
                 info_screen.blit(preview_screen, preview_screen_offset_to_info_screen)
 
