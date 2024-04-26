@@ -206,7 +206,7 @@ class Tetris:
             return (main_surface.get_size()[0] - blit_surface.get_size()[0]) // 2
         
         def draw_tetromino(surface, tetromino, x, y, block_size, 
-                           draw_border=False, border_color=Tetris.background_color):
+                           draw_border=True, border_color=Tetris.background_color):
             for r in range(tetromino.size):
                 for c in range(tetromino.size):
                     if tetromino.shape[r][c]:
@@ -366,8 +366,7 @@ class Tetris:
                     self.next_tetromino, 
                     tetromino_offset[0], 
                     tetromino_offset[1], 
-                    self.block_size, 
-                    draw_border=True
+                    self.block_size
                 )
 
                 info_screen.blit(preview_screen, preview_screen_offset_to_info_screen)
