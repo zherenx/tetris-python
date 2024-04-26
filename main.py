@@ -86,6 +86,9 @@ class Tetris:
 
         self.fps = fps
 
+        self.reset_game()
+    
+    def reset_game(self):
         self.gameboard = [[0] * self.w for _ in range(self.h)]
 
         self.cur_tetromino = None
@@ -299,8 +302,7 @@ class Tetris:
                     if event.key == pygame.K_ESCAPE:
                         running = False
                     elif event.key == pygame.K_r:
-                        # TODO: implement restart game
-                        pass
+                        self.reset_game()
 
                 if not self.game_over:
                     if event.type == free_fall_timer_event:
