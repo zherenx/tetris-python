@@ -284,6 +284,11 @@ class Tetris:
 
         free_fall_timer_event = pygame.USEREVENT + 1
         pygame.time.set_timer(free_fall_timer_event, self.free_fall_interval)
+
+        # This variable is for updating the game one more time (to show 
+        # the collided piece) before showing the game over page.
+        # There might be better way of doing it...
+        last_frame_drawn = False
         
         while running:
 
@@ -310,7 +315,9 @@ class Tetris:
                         elif event.key == pygame.K_UP:
                             self.rotate()
 
-            if self.game_over:
+            if self.game_over and last_frame_drawn:
+
+                # TODO: draw the last piece on gameboard
 
                 main_screen.blit(game_over_background, (0, 0))
                 # pygame.draw.rect(main_screen, (40, 40, 40, 10), (0, 0, main_screen.get_size()[0], main_screen.get_size()[1]))
@@ -331,6 +338,12 @@ class Tetris:
                 # update game screen
                 game_screen.fill("black")
 
+                for r in range(self.h):
+                    for c in range(self.w):
+                        if self.gameboard[r][c]:
+                            pygame.draw.rect(game_screen, self.gameboard[r][c], grid[r][c])
+                        pygame.draw.rect(game_screen, Tetris.background_color, grid[r][c], 1)
+
                 if self.cur_tetromino:
                     draw_tetromino(
                         game_screen, 
@@ -339,12 +352,6 @@ class Tetris:
                         self.y * self.block_size, 
                         self.block_size
                     )
-                
-                for r in range(self.h):
-                    for c in range(self.w):
-                        if self.gameboard[r][c]:
-                            pygame.draw.rect(game_screen, self.gameboard[r][c], grid[r][c])
-                        pygame.draw.rect(game_screen, Tetris.background_color, grid[r][c], 1)
 
                 # update info screen
                 info_screen.fill(Tetris.background_color)
@@ -376,6 +383,9 @@ class Tetris:
 
                 main_screen.blit(game_screen, game_screen_offset)
                 main_screen.blit(info_screen, info_screen_offset)
+
+                if self.game_over:
+                    last_frame_drawn = True
 
             pygame.display.flip()
 
