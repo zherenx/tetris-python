@@ -168,6 +168,7 @@ class Tetris:
         self.check_lines(dirty_rows)
     
     def check_lines(self, rows):
+        rows = sorted(list(rows))
         num_completed_lines = 0
         for r in rows:
             is_completed = True
