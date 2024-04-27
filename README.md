@@ -2,7 +2,7 @@
 
 Tetris game using Python and the pygame modules
 
-![game_screen](res/game_screen.png)
+<img src="res/game_screen.png" alt="game_screen" width="500">
 
 ## Control
 
@@ -28,7 +28,7 @@ There are some design/implementation decisions I made in this project that might
   - I currently use a set_timer_flag and keep track of it in the game loop to signal the game to set new timer when level up to speed up the free fall, there might be a better way.
 - Handling of the rendering of the last tetromino before game over
   - When game over, I want to show the last tetromino (the one which cause the game over), but at the same time, I don't want to keep updating the game board in the background (after game over) when the game over screen is shown, and therefore, in the gameloop, it keep track of a game_over flag to decide to update the game screen or the game over screen, but not both. However, in this way, the last tetromino will not be drawn. To tackle this problem, my current solution is using a last_frame_drawn variable along with the game_over flag, and only when both flags are true, the game loop will stop updating the game screen. I think there might be other ways to achieve the same goal, but I haven't been able to come up with a better solution.
-  - ![game_over_screen](res/game_over.png =250x)
+  - <img src="res/game_over.png" alt="game_over_screen" width="300">
 - general code improvement, OOD, etc.
   - e.g. We can have the game logic in stay in the Tetris class while separate out the main game loop, rendering, etc.; the rendering logic can reside in its own class; ...
   - One problem that I haven't fully figured out is how to properly handle the free fall if we were to write the whole program in a more OOD fashion. I currently use a custum pygame timer event to implement the free fall, and the timer event is monitered in the game loop, so the shift down function is called from there. However, the periodical shift down (free fall) is part of the game logic, and thus, shouldn't be coupled with the game loop in my opinion.
